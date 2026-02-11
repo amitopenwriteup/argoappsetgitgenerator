@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: matrix-files-clusters
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+  - matrix:
+      generators:
+      - git:
+          repoURL: https://github.com/amitopenwriteup/argoappsetgitgenerator.git
+          revision: main
+          files:
+          - path: "configs/prod/**.json"
+      - list:
+          elements:
+          - cluster: in-cluster
+            url: https://kubernetes.default.svc
+  template:
+    metadata:
+      name: '{{.app.name}}-{{.cluster}}'
+      labels:
+        cluster: '{{.cluster}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{.app.repoURL}}'
+        targetRevision: '{{.app.targetRevision}}'
+        path: '{{.app.path}}'
+      destination:
+        server: '{{.url}}'
+        namespace: '{{.destination.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

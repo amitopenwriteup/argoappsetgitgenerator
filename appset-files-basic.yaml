@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: files-generator-basic
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - git:
+      repoURL: https://github.com/amitopenwriteup/argoappsetgitgenerator.git
+      revision: main
+      files:
+      - path: "configs/*/**.json"
+  template:
+    metadata:
+      name: '{{.app.name}}'
+    spec:
+      project: myproj
+      source:
+        repoURL: '{{.app.repoURL}}'
+        targetRevision: '{{.app.targetRevision}}'
+        path: '{{.app.path}}'
+      destination:
+        server: '{{.destination.server}}'
+        namespace: '{{.destination.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

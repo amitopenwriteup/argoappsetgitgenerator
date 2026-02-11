@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: directories-prod-only
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+  - git:
+      repoURL: https://github.com/amitopenwriteup/argoappsetgitgenerator.git
+      revision: main
+      directories:
+      - path: "environments/prod/apps/*"
+      - path: "environments/prod/apps/postgresql"
+        exclude: true  # Exclude PostgreSQL for now
+  template:
+    metadata:
+      name: '{{.path.basename}}-prod'
+      labels:
+        app: '{{.path.basename}}'
+        environment: prod
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/amitopenwriteup/argoappsetgitgenerator.git
+        targetRevision: main
+        path: '{{.path.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: prod
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
