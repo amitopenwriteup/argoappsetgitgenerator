@@ -1,0 +1,13 @@
+{
+  "app": {
+    "name": "helm-guestbook-dev",
+    "namespace": "dev",
+    "repoURL": "https://github.com/argoproj/argocd-example-apps.git",
+    "path": "helm-guestbook",
+    "targetRevision": "HEAD"
+  },
+  "destination": {
+    "server": "https://kubernetes.default.svc",
+    "namespace": "dev"
+  }
+}
